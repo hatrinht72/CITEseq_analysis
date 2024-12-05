@@ -1,7 +1,12 @@
 # Primary Analysis
 ## Raw data & Hierarchy 
-The experiment performed by 10X Genomics. 
-Cells were isolated then tagged by Hashtag and ADT, pooled then divided into 4 sequencing runs. 
+TotalSeqTM-A Antibodies & Cell Hashing. 
+Chromium next GEM, Single Cell 3'
+Cells were isolated from bones, then sorted by FASC to obtain only cKit cells, then incubated with CITE-seq cooktails (Hashtag and ADT) to labelling their surface. Then they will be assigned to one 1 barcode by the GEM system, in this part, mRNA will be RT into cDNA. After the GEM cleaning, ADT/HTO will be seperated to cDNA 
+The library will be prepared and amplified  
+Each lane of 10X chip will contain HTO, ADT and cDNA to sequencing.
+Theyre are indeed 4 lanes were used. 
+
 Assuming I was already in my citeseq_wk4 folder :
 
 ![image](https://github.com/user-attachments/assets/a2dcb03c-fe9f-4551-80fe-329b70544a4a)
