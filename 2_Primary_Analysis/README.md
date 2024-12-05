@@ -1,5 +1,5 @@
 # Primary Analysis
-## Bulk data & Hierarchy 
+## Raw data & Hierarchy 
 The experiment performed by 10X Genomics. 
 Cells were isolated then tagged by Hashtag and ADT, pooled then divided into 4 sequencing runs. 
 Assuming I was already in my citeseq_wk4 folder :
