@@ -2,7 +2,7 @@
 ## Raw data & Hierarchy 
 TotalSeqTM-A Antibodies & Cell Hashing. 
 Chromium next GEM, Single Cell 3'
-Cells were isolated from bones, then sorted by FASC to obtain only cKit cells, then incubated with CITE-seq cooktails (Hashtag and ADT) to labelling their surface. Then they will be assigned to one 1 barcode by the GEM system, in this part, mRNA will be RT into cDNA. After the GEM cleaning, ADT/HTO will be seperated to cDNA 
+Cells were isolated from bones, then enriched cKit by using FASC, then incubated with CITE-seq cooktails (Hashtag and ADT) to labelling their surface. Then they will be assigned to one 1 barcode by the GEM system, in this part, mRNA will be RT into cDNA. After the GEM cleaning, ADT/HTO will be seperated to cDNA 
 The library will be prepared and amplified  
 Each lane of 10X chip will contain HTO, ADT and cDNA to sequencing.
 Theyre are indeed 4 lanes were used. 
