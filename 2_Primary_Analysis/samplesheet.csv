@@ -1,7 +1,7 @@
 fastqs,sample,library_type
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-cDNA1/,MAP17-4wks-cDNA1,Gene Expression
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-cDNA2/,MAP17-4wks-cDNA2,Gene Expression
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-cDNA3/,MAP17-4wks-cDNA3,Gene Expression
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-cDNA4/,MAP17-4wks-cDNA4,Gene Expression
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-ADT/,MAP17-4wks-ADT,Antibody Capture
-/home/ha/y1/cahier_labo/241126/citeseq_wk4/fastq/MAP17-4wks-Hashtag/,MAP17-4wks-Hashtag,Antibody Capture
+path/citeseq_wk4/fastq/MAP17-4wks-cDNA1/,MAP17-4wks-cDNA1,Gene Expression
+path/citeseq_wk4/fastq/MAP17-4wks-cDNA2/,MAP17-4wks-cDNA2,Gene Expression
+path/citeseq_wk4/fastq/MAP17-4wks-cDNA3/,MAP17-4wks-cDNA3,Gene Expression
+path/citeseq_wk4/fastq/MAP17-4wks-cDNA4/,MAP17-4wks-cDNA4,Gene Expression
+path/citeseq_wk4/fastq/MAP17-4wks-ADT/,MAP17-4wks-ADT,Antibody Capture
+path/citeseq_wk4/fastq/MAP17-4wks-Hashtag/,MAP17-4wks-Hashtag,Antibody Capture
