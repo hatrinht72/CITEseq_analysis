@@ -111,13 +111,83 @@ Here I will use the NormalizeData()
 ```
 so_wk4 <- NormalizeData(so_wk4, normalization.method = "LogNormalize", scale.factor = 10000)
 ```
-## 3.3 Dimension reduction
+
+## 3.3 Scaling the data
+This is a standard pre-processing step prior to any reduction technique
+with the ScaleData() function in Seurat, we can :
+- Shifts the expression of each gene, so that the mean expression across cells is 0
+- Scales the expression of each gene, so that the variance across cells is 1
+- By default, only variable features are scaled
+I will use all genes, not only variable features
+
+```
+all.genes <- rownames(so_wk4)
+so_wk4 <- ScaleData(so_wk4, features = all.genes)
+```
+Just a reminder that these steps could replaced by SCTransform
+
+# 3.4 Demultiplexing
+In standard scRNA analysis, we can jump directly into part **3.5**, but since CITE-sequencing pools all cells from different samples, we need to demultiplex them based on the HTO tag in prior. 
+We can start by normalize HTO data the using a function of Seurat to demultiplex:
+```
+
+so_wk4 <- HTODemux(so_wk4, assay = "HTO", positive.quantile = 0.99)
+```
+Based on their expression in HTO, cells will be classified into 3 categories :
+- Doublet : expression of HTO is more than for one specific cell
+- Singlet : significant expression of HTO corresponding to only one specific sample
+- Negative : show anything significant expression of HTO
+These data will be stored in HTO_classification.global
+```
+table(so_wk4$HTO_classification.global)
+#Doublet Negative  Singlet 
+# 1275      115    10004  
+```
+Visualize the classification 
+```
+png(paste0(OUT_DIR, "3_4_HTO_classification.png"), width = 1200, height = 1000, res = 150)
+Idents(so_wk4) <- "HTO_classification.global"
+VlnPlot(so_wk4, features = "nCount_RNA", pt.size = 0.1, log = TRUE)
+dev.off()
+```
+![3_4_HTO_classification](https://github.com/user-attachments/assets/9f416a88-0c9a-4646-adc3-a0f95793542a)
+
+We can also visualize the distribution of each HTO across cells, showing if we are distinct population of cells correspond to each sample 
+```
+png(paste0(OUT_DIR, "3_2_HTO_enrichment.png"), width = 1600, height = 1100, res = 150)
+Idents(so_wk4) <- "HTO_maxID"
+RidgePlot(so_wk4, assay = "HTO", features = rownames(so_wk4[["HTO"]])[1:6], ncol = 3)
+dev.off()
+```
+![3_4_HTO_enrichment](https://github.com/user-attachments/assets/df53410a-9f52-4321-bd78-a937dcc1e26d)
+
+Then we will only keep the singlet cells for further analysis 
+```
+so_wk4_doublet <- subset(so_wk4_doublet, subset = HTO_classification.global != "Negative")
+so_wk4_doublet <- subset(so_wk4_doublet, subset = HTO_classification.global != "Doublet")
+```
+Also with the HTO classification, we can now determine the group of sample, whether is from old or young mice:
+  - Young mice : HTO 1, 2, 3
+  - Old mice : HTO 4, 5, 6
+```
+so_wk4@meta.data$condition <- NA
+so_wk4@meta.data$condition[so_wk4@meta.data$HTO_classification %in% c("HTO1-TotalA", "HTO2-TotalA", "HTO3-TotalA")] <- "young"
+so_wk4@meta.data$condition[is.na(so_wk4@meta.data$condition)] <- "old"
+table(so_wk4@meta.data$condition)
+#old young 
+#5006  4998 
+```
+We can also save our data singlet filtered
+```
+saveRDS(so_wk4, file = "so_wk4.rds")
+```
+## 3.5 Dimension reduction
 One important step in scRNA analysis is reduce the number of input features while retaining maximum information.[We can perform it by 2 techniques: feature selection and feature extraction (PCA, t-SNE)](https://medium.com/@aastha.code/dimensionality-reduction-pca-t-sne-and-umap-41d499da2df2).
 - Principal Component Analysis (PCA) : linear dimension reduction algorithm
 - t-Distributed Stochastic Neighbor Embedding (t-SNE) : non linear dimensionality reduction algorithm
 - Unform Manifold Approximation and Projection (UMAP) : non linear dimensionality reduction algorithm
 
-### 3.3.1 Features selection
+### 3.5.1 Features selection
 Then highly variable features across cells will be choosen, basically they are highly expressed in some cells and lowly expressed in others. The default of features number is 2000 
 ```
 so_wk4 <- FindVariableFeatures(so_wk4, selection.method = "vst", nfeatures = 2000)
@@ -132,18 +202,6 @@ dev.off()
 ```
 ![3_3_Variable_features](https://github.com/user-attachments/assets/4fa57ce1-6b0f-4bbc-8254-9977744d880d)
 
-### 3.3.2 Scaling the data
-This is a standard pre-processing step prior to any reduction technique
-with the ScaleData() function in Seurat, we can :
-- Shifts the expression of each gene, so that the mean expression across cells is 0
-- Scales the expression of each gene, so that the variance across cells is 1
-- By default, only variable features are scaled
-I will use all genes, not only variable features
-
-```
-all.genes <- rownames(so_wk4)
-so_wk4 <- ScaleData(so_wk4, features = all.genes)
-```
 ### 3.3.3 Linear dimensional reduction 
 We can now apply PCA to our seurat object, only variable features will be used as imput 
 ```
@@ -176,60 +234,17 @@ VizDimLoadings(so_wk4, dims = 1:2, reduction = "pca")
 dev.off()
 
 ```
+![3_3_PCA_viz](https://github.com/user-attachments/assets/b73c65a9-5f71-4ebc-b99d-5025c91a7128)
+
+With DimHeatmap(), we can explore the primary sources of heterogeneity in our dataset 
+```
+DimHeatmap(pbmc, dims = 1, cells = 500, balanced = TRUE)
+```
+![DimHeatmap_PC1](https://github.com/user-attachments/assets/6d6d772b-0289-4cff-a952-c2dd97499c4d)
+To determine the right dimension to use, we can generate an elbow plot, ranking of the principal components based on the percentage of variance explained by each one
+
+ElbowPlot(pbmc)
 
 
 
-
-
-
-
-# 4. Demultiplexing
-Since CITE-sequencing pools all cells from different samples, we need to demultiplex them based on the HTO tag. There is a function in Seurat to do this. 
-```
-so_wk4 <- HTODemux(so_wk4, assay = "HTO", positive.quantile = 0.99)
-```
-Based on their expression in HTO, cells will be classified into 3 categories :
-- Doublet : expression of HTO is more than for one specific cell
-- Singlet : significant expression of HTO corresponding to only one specific sample
-- Negative : show anything significant expression of HTO
-These data will be stored in HTO_classification.global
-```
-table(so_wk4$HTO_classification.global)
-#Doublet Negative  Singlet 
-# 962     2879     9357 
-```
-Visualize the classification 
-```
-png(paste0(OUT_DIR, "3_1_HTO_classification.png"), width = 1200, height = 1000, res = 150)
-Idents(so_wk4) <- "HTO_classification.global"
-VlnPlot(so_wk4, features = "nCount_RNA", pt.size = 0.1, log = TRUE)
-dev.off()
-```
-![3_1_HTO_classification](https://github.com/user-attachments/assets/406f69a1-b511-4c87-be47-3505717d5665)
-
-We can also visualize the distribution of each HTO across cells, showing if we are distinct population of cells correspond to each sample 
-```
-png(paste0(OUT_DIR, "3_2_HTO_demultiplexing.png"), width = 1600, height = 1100, res = 150)
-Idents(so_wk4) <- "HTO_maxID"
-RidgePlot(so_wk4, assay = "HTO", features = rownames(so_wk4[["HTO"]])[1:6], ncol = 3)
-dev.off()
-```
-![3_1_HTO_demultiplexing](https://github.com/user-attachments/assets/6105a229-b93b-4d25-bb98-3b1476742ce7)
-
-Then we will only keep the singlet cells for further analysis 
-```
-so_wk4 <- subset(so_wk4, idents = "Negative", invert = TRUE)
-so_wk4 <- subset(so_wk4, idents = "Doublet", invert = TRUE)
-```
-Also with the HTO classification, we can now determine the group of sample, whether is from old or young mice:
-  - Young mice : HTO 1, 2, 3
-  - Old mice : HTO 4, 5, 6
-```
-so_wk4@meta.data$condition <- NA
-so_wk4@meta.data$condition[so_wk4@meta.data$HTO_classification %in% c("HTO1-TotalA", "HTO2-TotalA", "HTO3-TotalA")] <- "young"
-so_wk4@meta.data$condition[is.na(so_wk4@meta.data$condition)] <- "old"
-table(so_wk4@meta.data$condition)
-#old young 
-#3613  5744 
-```
 
