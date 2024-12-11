@@ -196,6 +196,9 @@ so_wk4@meta.data <- so_wk4@meta.data %>%
     HTO_classification == "HTO6-TotalA" ~ "old 3",
     TRUE ~ NA_character_  # If none of the conditions match, assign NA
   ))
+
+#old 1   old 2   old 3 young 1 young 2 young 3 
+#1874    1726    1406    1821    1712    1465 
 ```
 Then we can set up the condition 
 ```
