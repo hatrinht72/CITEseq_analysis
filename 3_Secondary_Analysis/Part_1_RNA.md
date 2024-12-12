@@ -353,5 +353,3 @@ write.csv(condition.diffgenes, file=paste0(output_diff,i,".csv"))
 })
 }
 ```
-# 4. ADT analysis
-After scRNA analysis, we can now attack to the part of ADT. 
