@@ -57,7 +57,7 @@ so_wk4[["HTO"]] <- CreateAssayObject(counts = wk4_HTO)
 ```
 We can now start the standard [pre-processing workflow for scRNA](https://satijalab.org/seurat/articles/pbmc3k_tutorial) from Seurat 
 
-# 3. Standard pre-processing workflow
+# 3. Standard workflow for RNA data set
 ## 3.1 Quality control 
 To select cells for further analysis, we can base on several metrics : 
 The number of unique genes detected in each cell :
@@ -290,5 +290,68 @@ Levels: 0 1 2 3 4 5 6 7 8 9 10
 ```
 
 ### 3.6.2 Non-linear dimensional reduction (UMAP/tSNE)
+We can now try to create UMAP plot or t-SNE, based on the PCA dimensions
+```
+so_wk4 <- RunUMAP(so_wk4, reduction = "pca", dims = 1:15, assay = "RNA", reduction.name = "rna.umap")
+png(paste0(OUT_DIR, "3_6_UMAP_PCA_RNA.png"), width = 2000, height = 1000, res = 150)
+plot1 <- DimPlot(so_wk4, reduction = "rna.umap", group.by = "seurat_clusters")
+plot2 <- DimPlot(so_wk4, reduction = "rna.umap", group.by = "condition")
+plot1 + plot2
+dev.off()
+```
+![3_6_UMAP_PCA_RNA](https://github.com/user-attachments/assets/a12c3933-e37c-4c03-ae10-143d08cb7e8f)
+
+```
+so_wk4 <- RunTSNE(so_wk4, reduction = "pca", dims = 1:15, assay = "RNA", reduction.name = "rna.TSNE")
+png(paste0(OUT_DIR, "3_6_TSNE_PCA_RNA_dims30.png"), width = 2000, height = 1000, res = 150)
+plot1 <- DimPlot(so_wk4, reduction = "rna.T.SNE", group.by = "seurat_clusters")
+plot2 <- DimPlot(so_wk4, reduction = "rna.T.SNE", group.by = "condition")
+plot1 + plot2
+dev.off()
+```
+![3_6_TSNE_PCA_RNA_dims30](https://github.com/user-attachments/assets/6ab8ae84-5a76-4df2-8bb1-353c0641f870)
 
 
+We can extract the number of cell in each cluster, each sample  
+```
+n_cells <- FetchData(so_wk4, 
+                     vars = c("ident", "orig.ident")) %>%
+        dplyr::count(ident, orig.ident) %>%
+        tidyr::spread(ident, n)
+View(n_cells)
+     orig.ident    0    1    2    3    4   5   6   7   8   9 10
+1 SeuratProject 1907 1523 1447 1084 1005 901 726 614 575 183 39
+
+```
+### 3.7 Differential expression analysis
+Now we have clusters, we can extract the markers of each cluster, compared to one other cluster or all others clusters. These information could be useful if we want to annotate cell type.
+```
+Idents(so_wk4) <- "seurat_clusters"
+rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
+saveRDS(rna_markers, file = "rna_markers.rds")
+```
+
+In the case of trying this article, we can also try to find differential expression between old and young mice. 
+
+In seurat, you can choose the Identity class labels of cells that you would like to use, for example with Seurat.cluster identification, each cell will be assigned to the cluster to whom they belong.
+We can change the Identity class labels with this command : 
+```
+Idents(so_wk4) <- "seurat_clusters"
+```
+We can now try to find differential expression gene between old and young mice across clusters
+```
+so_wk4$celltype.condition <- paste(Idents(so_wk4), so_wk4$condition, sep="_")
+so_wk4$celltype <- Idents(so_wk4)
+Idents(so_wk4) <- "celltype.condition"
+
+for (i in 0:9){ #or however many clusters you have
+try({
+ident1 <- paste0(i,"_old")
+ident2 <- paste0(i,"_young")
+condition.diffgenes <- FindMarkers(so_wk4, ident.1 = ident1, ident.2=ident2, min.pct=0.25, logfc.threshold=0.25)
+write.csv(condition.diffgenes, file=paste0(output_diff,i,".csv"))
+})
+}
+```
+# 4 ADT analysis
+After scRNA analysis, we can now attack to the part of ADT. 
