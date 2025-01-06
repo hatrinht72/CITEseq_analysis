@@ -83,7 +83,7 @@ Just a reminder that these steps could replaced by SCTransform
 
 
 # 3.5 Demultiplexing
-In standard scRNA analysis, we can jump directly into part **3.5**, but since CITE-sequencing pools all cells from different samples, we need to demultiplex them based on the HTO tag in prior. 
+In standard scRNA analysis, we can jump directly into part **3.6**, but since CITE-sequencing pools all cells from different samples, we need to demultiplex them based on the HTO tag in prior. 
 We can start by normalize HTO data the using a function of [Seurat](https://satijalab.org/seurat/articles/hashing_vignette) to demultiplex:
 ```
 
@@ -213,7 +213,7 @@ dev.off()
 
 So according to the plot that we have, we can chose 15 as a cutoff
 
-####  3.6.1.1 Cluster the cells
+####  3.6.1.2 Cluster the cells
 Based on the cutoff that we choosen, now we can cluster the cell 
 ```
 so_wk4 <- FindNeighbors(so_wk4, dims = 1:15)
@@ -271,6 +271,10 @@ Idents(so_wk4) <- "seurat_clusters"
 rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
 saveRDS(rna_markers, file = "rna_markers.rds")
 ```
+Based on the markers that we found, we can identify the cell type corresponding each cluster 
+
+
+
 
 In the case of trying this article, we can also try to find differential expression between old and young mice. 
 
