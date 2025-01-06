@@ -164,7 +164,7 @@ One important step in scRNA analysis is reduce the number of input features whil
 ####  3.6.1.1 Dimensional reduction
 We can now apply PCA to our seurat object, only variable features will be used as imput 
 ```
-so_wk4 <- RunPCA(so_wk4, features = VariableFeatures(object = so_wk4))
+so_wk4 <- RunPCA(so_wk4, features = VariableFeatures(object = so_wk4), reduction.name = 'rna.pca')
 ```
 To visualize the result, we can use VizDimReduction(), DimPlot(), and DimHeatmap() 
 ```
@@ -190,7 +190,7 @@ Negative:  Kif23, Nusap1, Ube2c, Vim, Ect2
 or 
 ```
 png(paste0(OUT_DIR, "3_3_PCA.png"), width = 2000, height = 1000, res = 150)
-VizDimLoadings(so_wk4, dims = 1:2, reduction = "pca")
+VizDimLoadings(so_wk4, dims = 1:2, reduction = "rna.pca")
 dev.off()
 
 ```
