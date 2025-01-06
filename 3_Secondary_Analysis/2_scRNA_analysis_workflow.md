@@ -285,7 +285,7 @@ so_wk4$celltype.condition <- paste(Idents(so_wk4), so_wk4$condition, sep="_")
 so_wk4$celltype <- Idents(so_wk4)
 Idents(so_wk4) <- "celltype.condition"
 
-for (i in 0:9){ #or however many clusters you have
+for (i in 0:9){ #9 or however many clusters you have
 try({
 ident1 <- paste0(i,"_old")
 ident2 <- paste0(i,"_young")
