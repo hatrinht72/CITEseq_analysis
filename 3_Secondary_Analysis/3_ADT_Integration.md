@@ -11,17 +11,26 @@ so_wk4 <- NormalizeData(so_wk4, normalization.method = 'CLR', margin = 2)
 so_wk4 <- ScaleData(so_wk4, features = adtfeatures)
 so_wk4 <- RunPCA(so_wk4, features = VariableFeatures(object = so_wk4), reduction.name ='adt.pca')
 ```
+We can also find the cluster based on ADT information 
+```
+so_wk4 <- FindNeighbors(so_wk4, assay = "ADT", reduction ="adt.pca", dims = 1:25)
+so_wk4 <- FindClusters(so_wk4, assay = "ADT", redection.type = "adt.pca", dims.use = 1:25,resolution = 0.8)
+so_wk4@meta.data$adt_clusters <- so_wk4@meta.data$RNA_snn_res.0.8
+```
 We can then do dimension reduction like UMAP 
 
 ```
 so_wk4 <- RunUMAP(so_wk4, reduction = "adt.pca", dims = 1:25, assay = "ADT", reduction.name = "adt.umap")
-png(paste0(OUT_DIR, "6_Cluster_by_ADT_weight.png"), width = 2000, height = 1000, res = 150)
-plot1 <-DimPlot(so_wk4, reduction = "adt.umap", group.by = "seurat_clusters")
+png(paste0(OUT_DIR, "4_1_UMAP_PCA_ADT.png"), width = 3000, height = 1000, res = 150)
+plot0 <-DimPlot(so_wk4, reduction = "adt.umap", group.by = "adt_clusters")
+plot1 <-DimPlot(so_wk4, reduction = "adt.umap", group.by = "rna_clusters")
 plot2 <-DimPlot(so_wk4, reduction = "adt.umap", group.by = "condition")
-plot1 + plot2
+plot0 + plot1 + plot2
 dev.off()
 ```
-![4_1_Cluster_by_ADT_weight](https://github.com/user-attachments/assets/50cbe942-0a27-43a1-bbcb-8500333b30ae)
+![4_1_UMAP_PCA_ADT](https://github.com/user-attachments/assets/a2c0f44c-9d35-472b-81b4-c0426033e3d7)
+
+Here we can see we have some similarity in clusters based on ADT and cluster based on RNA but still remain some difference, thats why we can move into next part, integration these 2 datasets.
 
 ## 4.2 ADT integration
 Now we already have our ADT and RNA dimensional reduction, we can use the integration tools [Weighted Nearest Neighbor Analysis](https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis) proposed by Seurat 
@@ -38,8 +47,27 @@ so_wk4 <- RunUMAP(so_wk4, nn.name = "weighted.nn", reduction.name = "wnn.umap", 
 We can have other clusters based on this integration 
 ```
 so_wk4 <- FindClusters(so_wk4, graph.name = "wsnn", algorithm = 3, resolution = 2, verbose = FALSE)
+so_wk4@meta.data$wnn_clusters <- so_wk4@meta.data$wsnn_res.2
 ```
 ![4_2_UMAP_WNN](https://github.com/user-attachments/assets/595819e4-6765-4199-a788-48a31827efba)
 
+Since the clusters is difference, so we can find new set of markers
+
 So we can based on these integration and litterature to annotate our cells
+```
+Idents(so_wk4) <- "wnn_clusters"
+rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
+#If we dont precise assay, it will automatically searching on ADT
+saveRDS(rna_markers, file = "wnn_rna_markers.rds")
+
+#we can also find the positive markers 
+all_rna_pos_markers = FindAllMarkers(object = so_wk4,assay = "RNA",
+                                 only.pos = TRUE, # genes more expressed in the cluster compared
+                                 min.pct = 0.25, # % of cell expressing the marker
+                                 logfc.threshold = 0.25)
+saveRDS(all_pos_markers, file = "wnn_all_rna_pos_markers.rds")
+
+saveRDS(wnn_all_pos_markers, file = "wnn_all_pos_markers.rds")
+saveRDS(wnn_rna_markers, file = "wnn_rna_markers.rds")
+
 
