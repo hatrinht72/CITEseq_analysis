@@ -70,23 +70,19 @@ dev.off()
 ```
 ![4_2_UMAP_wnn](https://github.com/user-attachments/assets/ba23f952-36f5-4ccc-96ff-1f208f90bee9)
 
-Since the clusters is difference, so we can find new set of markers
+Since the clusters is difference, so we can find new set of markers, a reminder : If we dont precise assay, it will automatically searching on ADT
 
-So we can based on these integration and litterature to annotate our cells
 ```
 Idents(so_wk4) <- "wnn_clusters"
-rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
-#If we dont precise assay, it will automatically searching on ADT
-saveRDS(rna_markers, file = "wnn_rna_markers.rds")
+wnn_rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
 
-#we can also find the positive markers 
-all_rna_pos_markers = FindAllMarkers(object = so_wk4,assay = "RNA",
-                                 only.pos = TRUE, # genes more expressed in the cluster compared
-                                 min.pct = 0.25, # % of cell expressing the marker
-                                 logfc.threshold = 0.25)
-saveRDS(all_pos_markers, file = "wnn_all_rna_pos_markers.rds")
+wnn_all_pos_markers = FindAllMarkers(object = so_wk4, assay= "RNA",
+                                     only.pos = TRUE, # genes more expressed in the cluster compared
+                                     min.pct = 0.25, # % of cell expressing the marker
+                                     logfc.threshold = 0.25)
 
 saveRDS(wnn_all_pos_markers, file = "wnn_all_pos_markers.rds")
 saveRDS(wnn_rna_markers, file = "wnn_rna_markers.rds")
-
+```
+So we can based on these integration and litterature to annotate our cells
 
