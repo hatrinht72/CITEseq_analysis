@@ -42,14 +42,32 @@ so_wk4 <- FindMultiModalNeighbors(
   dims.list = list(1:30, 1:25), 
   modality.weight.name = c("RNA.weight", "ADT.weight")
 )
+so_wk4 <- FindClusters(so_wk4, graph.name = "wsnn", algorithm = 3, resolution = 2, verbose = FALSE)
+so_wk4@meta.data$wnn_clusters <- so_wk4@meta.data$wsnn_res.2
 so_wk4 <- RunUMAP(so_wk4, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
 ```
 We can have other clusters based on this integration 
+So now we can compare all 3 reductions that we made 
 ```
-so_wk4 <- FindClusters(so_wk4, graph.name = "wsnn", algorithm = 3, resolution = 2, verbose = FALSE)
-so_wk4@meta.data$wnn_clusters <- so_wk4@meta.data$wsnn_res.2
+png(paste0(OUT_DIR, "4_2_UMAP_all.png"), width = 3000, height = 1000, res = 150)
+plot0 <-DimPlot(so_wk4, reduction = "rna.umap", group.by = "rna_clusters")
+plot1 <-DimPlot(so_wk4, reduction = "adt.umap", group.by = "adt_clusters")
+plot2 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "wnn_clusters")
+plot0 + plot1 + plot2
+dev.off()
 ```
-![4_2_UMAP_WNN](https://github.com/user-attachments/assets/595819e4-6765-4199-a788-48a31827efba)
+![4_2_UMAP_all](https://github.com/user-attachments/assets/dd4cf7b7-2b5e-41d7-b13f-ca178c140497)
+
+only WNN reduction version 
+```
+png(paste0(OUT_DIR, "4_2_UMAP_wnn.png"), width = 3000, height = 1000, res = 150)
+plot0 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "rna_clusters")
+plot1 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "adt_clusters")
+plot2 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "wnn_clusters")
+plot0 + plot1 + plot2
+dev.off()
+```
+![4_2_UMAP_wnn](https://github.com/user-attachments/assets/03311902-2fc2-4592-894d-1fd8fcaf84c7)
 
 Since the clusters is difference, so we can find new set of markers
 
