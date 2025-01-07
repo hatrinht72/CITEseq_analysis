@@ -58,6 +58,23 @@ dev.off()
 ```
 ![4_2_UMAP_all](https://github.com/user-attachments/assets/dd4cf7b7-2b5e-41d7-b13f-ca178c140497)
 
+We can compare the number of cell in each cluster by different clusterings (i.e : 3.6.2)
+```
+> n_cells_rna
+#     orig.ident    0    1    2    3    4   5   6   7   8   9 10
+# 1 SeuratProject 1907 1523 1447 1084 1005 901 726 614 575 183 39
+
+> n_cells_adt
+     orig.ident    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14 15
+1 SeuratProject 1887 854 815 752 735 676 676 659 608 580 509 483 359 189 183 39
+
+> n_cells_wnn
+     orig.ident   0   1  10  11  12  13  14  15  16  17  18  19   2  20  21  22  23  24 25   3   4   5   6   7   8   9
+1 SeuratProject 928 731 392 390 388 381 344 310 275 268 252 227 726 200 169 167 131 117 43 585 567 549 526 475 441 422
+
+```
+
+
 only WNN reduction version 
 ```
 png(paste0(OUT_DIR, "4_2_UMAP_wnn.png"), width = 4000, height = 2500, res = 150)
