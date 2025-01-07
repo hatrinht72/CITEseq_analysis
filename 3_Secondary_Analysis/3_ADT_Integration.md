@@ -60,14 +60,15 @@ dev.off()
 
 only WNN reduction version 
 ```
-png(paste0(OUT_DIR, "4_2_UMAP_wnn.png"), width = 3000, height = 1000, res = 150)
+png(paste0(OUT_DIR, "4_2_UMAP_wnn.png"), width = 4000, height = 2500, res = 150)
 plot0 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "rna_clusters")
 plot1 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "adt_clusters")
 plot2 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "wnn_clusters")
-plot0 + plot1 + plot2
+plot3 <-DimPlot(so_wk4, reduction = "wnn.umap", group.by = "condition")
+plot0+plot1+plot2+plot3
 dev.off()
 ```
-![4_2_UMAP_wnn](https://github.com/user-attachments/assets/03311902-2fc2-4592-894d-1fd8fcaf84c7)
+![4_2_UMAP_wnn](https://github.com/user-attachments/assets/ba23f952-36f5-4ccc-96ff-1f208f90bee9)
 
 Since the clusters is difference, so we can find new set of markers
 
