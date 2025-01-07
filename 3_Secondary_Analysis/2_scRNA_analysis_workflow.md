@@ -168,7 +168,7 @@ so_wk4 <- RunPCA(so_wk4, features = VariableFeatures(object = so_wk4), reduction
 ```
 To visualize the result, we can use VizDimReduction(), DimPlot(), and DimHeatmap() 
 ```
-print(so_wk4[["pca"]], dims = 1:5, nfeatures = 5)
+print(so_wk4[["rna.pca"]], dims = 1:5, nfeatures = 5)
 
 PC_ 1 
 Positive:  Ptma, Ctsg, Mpo, Hp, Anxa3 
@@ -219,42 +219,37 @@ Based on the cutoff that we choosen, now we can cluster the cell
 so_wk4 <- FindNeighbors(so_wk4, dims = 1:15)
 so_wk4 <- FindClusters(so_wk4, resolution = 0.5)
 ```
-We can look at cluster IDs of the first 5 cells :
+The clusters will be stored in seurat_clusters but it exactly the same thing in so_wk4@meta.data$RNA_snn_res.0.5. So we can then modify this seurat_clusters as rna_clusters 
 ```
-head(Idents(so_wk4), 5)
-
-AAACCCAAGCAGGCAT-1 AAACCCAAGTATGATG-1 AAACCCAAGTCGAATA-1 AAACCCACAACAGCTT-1 
-                 2                  0                  0                  7 
-AAACCCACAGCTCTGG-1 
-                 4 
-Levels: 0 1 2 3 4 5 6 7 8 9 10
+so_wk4@meta.data$rna_clusters <- so_wk4@meta.data$RNA_snn_res.0.5
 ```
 
 ### 3.6.2 Non-linear dimensional reduction (UMAP/tSNE)
 We can now try to create UMAP plot or t-SNE, based on the PCA dimensions
 ```
-so_wk4 <- RunUMAP(so_wk4, reduction = "pca", dims = 1:15, assay = "RNA", reduction.name = "rna.umap")
+so_wk4 <- RunUMAP(so_wk4, reduction = "rna.pca", dims = 1:15, assay = "RNA", reduction.name = "rna.umap")
 png(paste0(OUT_DIR, "3_6_UMAP_PCA_RNA.png"), width = 2000, height = 1000, res = 150)
-plot1 <- DimPlot(so_wk4, reduction = "rna.umap", group.by = "seurat_clusters")
+plot1 <- DimPlot(so_wk4, reduction = "rna.umap", group.by = "rna_clusters")
 plot2 <- DimPlot(so_wk4, reduction = "rna.umap", group.by = "condition")
 plot1 + plot2
 dev.off()
 ```
-![3_6_UMAP_PCA_RNA](https://github.com/user-attachments/assets/a12c3933-e37c-4c03-ae10-143d08cb7e8f)
+![3_6_UMAP_PCA_RNA](https://github.com/user-attachments/assets/c834a066-a475-40e7-b67d-82fa55b0c7cc)
 
 ```
-so_wk4 <- RunTSNE(so_wk4, reduction = "pca", dims = 1:15, assay = "RNA", reduction.name = "rna.TSNE")
+so_wk4 <- RunTSNE(so_wk4, reduction = "rna.pca", dims = 1:15, assay = "RNA", reduction.name = "rna.TSNE")
 png(paste0(OUT_DIR, "3_6_TSNE_PCA_RNA_dims30.png"), width = 2000, height = 1000, res = 150)
-plot1 <- DimPlot(so_wk4, reduction = "rna.T.SNE", group.by = "seurat_clusters")
+plot1 <- DimPlot(so_wk4, reduction = "rna.T.SNE", group.by = "rna_clusters")
 plot2 <- DimPlot(so_wk4, reduction = "rna.T.SNE", group.by = "condition")
 plot1 + plot2
 dev.off()
 ```
-![3_6_TSNE_PCA_RNA_dims30](https://github.com/user-attachments/assets/6ab8ae84-5a76-4df2-8bb1-353c0641f870)
+![3_6_TSNE_PCA_RNA_dims30](https://github.com/user-attachments/assets/22aff3ae-ae38-463f-bb0b-6f55f1760e2b)
 
 
 We can extract the number of cell in each cluster, each sample  
 ```
+Idents(so_wk4) <- "rna_clusters"
 n_cells <- FetchData(so_wk4, 
                      vars = c("ident", "orig.ident")) %>%
         dplyr::count(ident, orig.ident) %>%
@@ -266,23 +261,66 @@ View(n_cells)
 ```
 ### 3.7 Differential expression analysis
 Now we have clusters, we can extract the markers of each cluster, compared to one other cluster or all others clusters. These information could be useful if we want to annotate cell type.
-```
-Idents(so_wk4) <- "seurat_clusters"
-rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
-saveRDS(rna_markers, file = "rna_markers.rds")
-```
-Based on the markers that we found, we can identify the cell type corresponding each cluster 
-
-
-
-
-In the case of trying this article, we can also try to find differential expression between old and young mice. 
 
 In seurat, you can choose the Identity class labels of cells that you would like to use, for example with Seurat.cluster identification, each cell will be assigned to the cluster to whom they belong.
 We can change the Identity class labels with this command : 
 ```
-Idents(so_wk4) <- "seurat_clusters"
+Idents(so_wk4) <- "rna_clusters"
 ```
+```
+Idents(so_wk4) <- "rna_clusters"
+rna_markers <- FindAllMarkers(so_wk4, assay = "RNA")
+```
+We can also find the positive markers of each cluster (gene highly expressed) 
+```
+all_rna_pos_markers = FindAllMarkers(object = so_wk4,
+                                 only.pos = TRUE, # genes more expressed in the cluster compared
+                                 min.pct = 0.25, # % of cell expressing the marker
+                                 logfc.threshold = 0.25)
+```
+in **rna_markers** and **all_rna_pos_markers**, the gene name is stored in rownames so we can clone it into new column inside the dataframe 
+```
+rna_markers$gene <- rownames(rna_markers)
+all_rna_pos_markers$gene <- rownames(all_rna_pos_markers)
+saveRDS(all_pos_markers, file = "all_pos_markers.rds")
+saveRDS(rna_markers, file = "rna_markers.rds")
+```
+We can identify top markers between these markers, but just a little reminder that, not the most expressed marker is the most important marker to identify the cell type, we have to revise the litterature to pick the panel/set of marker cell type. 
+Here we can try to find top 3 expressed markers of each cluster
+```
+top3_rna_markers = as.data.frame(rna_markers %>% 
+                               group_by(cluster) %>% 
+                               top_n(n = 3, wt = avg_log2FC))
+```
+Then we can create a dotplot the visualization the expression of the genes by cluster : 
+```
+Seurat::DotPlot(so_wk4, features = unique(top3_rna_markers$gene)) +
+  # this second part of the code is just for esthetics :
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
+                                                     vjust = 1,
+                                                     size = 8, 
+                                                     hjust = 1)) +
+  Seurat::NoLegend()
+```
+![3_7_top_3_rna_markers](https://github.com/user-attachments/assets/6ece7a95-f98d-4ef5-a4cb-7d325a96acc6)
+
+We can also see the distribution of one genes from top markers or in litterature in our dimensional reduction graph. Here I pick 2 genes well annotated in litterature marker for HSC : _Procr_ and _Myl10_
+
+```
+png(paste0(OUT_DIR, "3_7_top_3_rna_markers.png"), width = 2000, height = 1000, res = 150)
+FeaturePlot(so_wk4, 
+            features = c("Procr", "Myl10"), 
+            reduction = "rna.umap"
+)
+dev.off()
+```
+
+![3_7_rna_markers_HSC](https://github.com/user-attachments/assets/cdad9431-7a76-4542-98ba-bd0fd2cffa7b)
+
+So basically, basde on the markers that we found, we can identify the cell type corresponding each cluster 
+
+In the case of trying this article, we can also explore the differential expression between old and young mice. 
+
 We can now try to find differential expression gene between old and young mice across clusters
 ```
 so_wk4$celltype.condition <- paste(Idents(so_wk4), so_wk4$condition, sep="_")
